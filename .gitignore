@@ -1,0 +1,4 @@
+# Build outputs (published as GitHub releases, not committed)
+build/
+dist/
+release/
