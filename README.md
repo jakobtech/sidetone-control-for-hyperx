@@ -17,7 +17,7 @@ unlike software monitoring such as Windows "Listen to this device" or VoiceMeete
 
 ## Requirements
 - Windows 10 (1809 or newer) or Windows 11
-- HyperX NGENUITY desktop app (from [hyperx.com](https://hyperx.com)), installed and running
+- HyperX NGENUITY desktop app (from [hyperx.com](https://hyperx.com)) installed. It does not need to be open: if NGENUITY is closed, Sidetone Control starts its headset service in the background by itself.
 - HyperX Cloud III S Wireless connected through its USB dongle
 
 ## Download
@@ -27,6 +27,8 @@ publisher. Choose **More info → Run anyway**. Compare the file with `SHA256SUM
 
 ## How it works
 NGENUITY consists of a UI and a local background service (`hxn-srv-communication-hub`) that talks to the headset.
+If NGENUITY is closed, Sidetone Control starts that service itself (hidden) and stops it again on exit; if you open
+NGENUITY, it replaces the service with its own and Sidetone Control reconnects automatically.
 Sidetone Control starts a small helper on the .NET runtime that NGENUITY installs. The helper uses NGENUITY's own
 `CommunicationHubManager` to send the same `AudioInputMonitoringLevel` command that NGENUITY has built in for
 this headset but does not show in its UI.

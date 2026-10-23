@@ -11,7 +11,9 @@ There is no extra delay, unlike Windows "Listen to this device" or VoiceMeeter.
 Requirements
 ------------
 - Windows 10 (1809 or newer) or Windows 11
-- HyperX NGENUITY desktop app (from hyperx.com), installed and running.
+- HyperX NGENUITY desktop app (from hyperx.com) installed. It does not need
+  to be open: if NGENUITY is closed, the app starts NGENUITY's headset service
+  in the background by itself and stops it again when you exit.
   Sidetone Control for HyperX talks to the headset through NGENUITY's
   background service.
 - HyperX Cloud III S Wireless connected through its USB dongle
@@ -19,7 +21,7 @@ Requirements
 
 How to use
 ----------
-1. Start NGENUITY and switch on the headset.
+1. Switch on the headset. (NGENUITY can stay closed.)
 2. Run SidetoneControl.exe. No installation is needed.
 3. Move the slider. Your voice gets quieter or louder right away.
 

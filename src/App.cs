@@ -16,9 +16,9 @@ using Microsoft.Win32;
 [assembly: AssemblyCompany("Jakob Hüttner")]
 [assembly: AssemblyProduct("Sidetone Control for HyperX")]
 [assembly: AssemblyCopyright("© 2026 Jakob Hüttner")]
-[assembly: AssemblyVersion("1.2.0.0")]
-[assembly: AssemblyFileVersion("1.2.0.0")]
-[assembly: AssemblyInformationalVersion("1.2.0")]
+[assembly: AssemblyVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("1.3.0.0")]
+[assembly: AssemblyInformationalVersion("1.3.0")]
 
 // Sidetone Control: the UI. Runs on the .NET Framework that ships with Windows and drives
 // SidetoneHelper (embedded in this exe), which runs on NGENUITY's .NET runtime and talks to
@@ -194,6 +194,83 @@ static class Settings
     }
 }
 
+// A Windows job object that kills every process put into it when Sidetone Control exits, even after a crash,
+// so the helper and a headset service we started never outlive the app.
+static class ChildJob
+{
+    [StructLayout(LayoutKind.Sequential)]
+    struct BasicLimits
+    {
+        public long PerProcessUserTimeLimit, PerJobUserTimeLimit;
+        public uint LimitFlags;
+        public UIntPtr MinimumWorkingSetSize, MaximumWorkingSetSize;
+        public uint ActiveProcessLimit;
+        public UIntPtr Affinity;
+        public uint PriorityClass, SchedulingClass;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct ExtendedLimits
+    {
+        public BasicLimits Basic;
+        public ulong ReadOps, WriteOps, OtherOps, ReadBytes, WriteBytes, OtherBytes; // IO_COUNTERS
+        public UIntPtr ProcessMemoryLimit, JobMemoryLimit, PeakProcessMemoryUsed, PeakJobMemoryUsed;
+    }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern IntPtr CreateJobObject(IntPtr attributes, string name);
+    [DllImport("kernel32.dll")] static extern bool SetInformationJobObject(IntPtr job, int infoClass, ref ExtendedLimits info, int size);
+    [DllImport("kernel32.dll")] static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+
+    const int ExtendedLimitInformation = 9;
+    const uint KillOnJobClose = 0x2000;
+    static readonly IntPtr Job = Create();
+
+    static IntPtr Create()
+    {
+        var job = CreateJobObject(IntPtr.Zero, null);
+        var info = new ExtendedLimits();
+        info.Basic.LimitFlags = KillOnJobClose;
+        SetInformationJobObject(job, ExtendedLimitInformation, ref info, Marshal.SizeOf(typeof(ExtendedLimits)));
+        return job; // intentionally never closed: Windows closes it when this process ends
+    }
+
+    public static void Add(Process p)
+    {
+        try { AssignProcessToJobObject(Job, p.Handle); } catch { }
+    }
+}
+
+// Lets Sidetone Control work while the NGENUITY window is closed: if neither NGENUITY nor its headset service
+// is running, start that service ourselves, hidden, exactly as NGENUITY does ("hxn-srv-communication-hub.exe server").
+// When NGENUITY is opened later it ends this copy and starts its own, and the helper simply reconnects.
+static class HubLauncher
+{
+    const string HubName = "hxn-srv-communication-hub";
+    static Process started;
+    static DateTime lastStart = DateTime.MinValue;
+
+    public static bool StartedByUs { get { return started != null && !started.HasExited; } }
+
+    // Returns true if a service is running or was just started (the caller should retry shortly).
+    public static bool EnsureRunning()
+    {
+        if (Process.GetProcessesByName(HubName).Length > 0) return true;
+        if (Process.GetProcessesByName("NGENUITY").Length > 0) return true; // NGENUITY is about to start its own
+        var exe = Path.Combine(HelperProcess.NgenuityDir, "Assets", "Services", HubName + ".exe");
+        if (!File.Exists(exe)) return false;
+        if (DateTime.UtcNow - lastStart < TimeSpan.FromSeconds(15)) return true; // don't hammer a service that keeps failing
+        lastStart = DateTime.UtcNow;
+        started = Process.Start(new ProcessStartInfo(exe, "server")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WorkingDirectory = Path.GetDirectoryName(exe)
+        });
+        ChildJob.Add(started);
+        return true;
+    }
+}
+
 // Starts SidetoneHelper on NGENUITY's .NET runtime and exchanges one line per command with it.
 class HelperProcess : IDisposable
 {
@@ -231,6 +308,7 @@ class HelperProcess : IDisposable
             WorkingDirectory = helperDir
         };
         process = Process.Start(psi);
+        ChildJob.Add(process);
         process.ErrorDataReceived += (s, e) => { };
         process.BeginErrorReadLine();
     }
@@ -780,7 +858,7 @@ class MainForm : Form
             g.DrawString(status, smallFont, b, 24 * k, 352 * k);
         using (var b = new SolidBrush(Theme.Dim))
         {
-            const string note = "Unofficial · requires HyperX NGENUITY";
+            const string note = "Unofficial · requires HyperX NGENUITY installed";
             var size = g.MeasureString(note, smallFont);
             g.DrawString(note, smallFont, b, ClientSize.Width - 24 * k - size.Width, 352 * k);
         }
@@ -866,7 +944,12 @@ class MainForm : Form
 
         var state = Parse(helper.Send("status"));
         if (state.Error != null) throw new Exception(state.Error);
-        if (!state.Hub) { Ui(() => { SetStatus("Waiting for NGENUITY and the headset dongle…", false); SetControlsEnabled(false); }); return; }
+        if (!state.Hub)
+        {
+            var starting = HubLauncher.EnsureRunning();
+            Ui(() => { SetStatus(starting ? "Connecting to the headset service…" : "HyperX NGENUITY's headset service was not found.", false); SetControlsEnabled(false); });
+            return;
+        }
         if (!state.Headset) { Ui(() => { SetStatus("Headset is off or not connected.", false); SetControlsEnabled(false); }); return; }
 
         var level = state.Level;

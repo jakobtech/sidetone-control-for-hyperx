@@ -1,11 +1,11 @@
-# Publishing: Sidetone Control for HyperX 1.2.0
+# Publishing: Sidetone Control for HyperX 1.3.0
 
 The release folder holds:
 
 | File | Use |
 |---|---|
-| `SidetoneControlForHyperX-1.2.0.zip` | Direct download (GitHub release, website). Contains `SidetoneControl.exe` and `README.txt`. |
-| `SidetoneControlForHyperX-1.2.0.0-x64.msix` | Microsoft Store upload. **Rebuild it after step 1 below**, because it still has placeholder identity values. |
+| `SidetoneControlForHyperX-1.3.0.zip` | Direct download (GitHub release, website). Contains `SidetoneControl.exe` and `README.txt`. |
+| `SidetoneControlForHyperX-1.3.0.0-x64.msix` | Microsoft Store upload. Built with your Partner Center identity. |
 | `store-screenshot-1920x1080.png` | Store listing screenshot. |
 | `PRIVACY.md` | Privacy policy text. Host it somewhere public, such as a GitHub repo, and paste the URL into Partner Center. |
 | `SHA256SUMS.txt` | Checksums, so downloaders can verify the files. |
@@ -25,7 +25,7 @@ For every update, raise the version in `src\App.cs`, `build.ps1` and `build-msix
 - **Pricing:** Free. Markets: all.
 - **Category:** Utilities & tools.
 - **Privacy policy URL:** the hosted `PRIVACY.md`.
-- **System requirements:** HyperX NGENUITY desktop app and a HyperX Cloud III S Wireless headset.
+- **System requirements:** HyperX NGENUITY desktop app installed and a HyperX Cloud III S Wireless headset.
 - **Age rating:** answer "no" to every question.
 - **Restricted capability `runFullTrust`.** Justification:
   > Sidetone Control for HyperX is a Win32 desktop app (Windows Forms). It needs full trust to start a helper process
@@ -45,7 +45,7 @@ For every update, raise the version in `src\App.cs`, `build.ps1` and `build-msix
 > - Battery level at a glance
 > - Optional start with Windows: runs quietly in the tray and restores your level whenever the headset reconnects
 >
-> Requires the HyperX NGENUITY desktop app from hyperx.com, installed and running, and a HyperX Cloud III S Wireless headset.
+> Requires the HyperX NGENUITY desktop app from hyperx.com to be installed (it does not need to be open) and a HyperX Cloud III S Wireless headset.
 >
 > Unofficial community tool. Not affiliated with, endorsed by, or supported by HyperX or HP Inc.
 > HyperX and NGENUITY are trademarks of HP Inc.
