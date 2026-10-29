@@ -3,7 +3,7 @@
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
 . .\scripts\Icon.ps1
-$version = '1.3.0'
+$version = '1.3.1'
 $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 New-Item -ItemType Directory -Force build, dist | Out-Null
 

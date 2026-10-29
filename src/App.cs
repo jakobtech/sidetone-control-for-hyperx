@@ -16,9 +16,9 @@ using Microsoft.Win32;
 [assembly: AssemblyCompany("Jakob Hüttner")]
 [assembly: AssemblyProduct("Sidetone Control for HyperX")]
 [assembly: AssemblyCopyright("© 2026 Jakob Hüttner")]
-[assembly: AssemblyVersion("1.3.0.0")]
-[assembly: AssemblyFileVersion("1.3.0.0")]
-[assembly: AssemblyInformationalVersion("1.3.0")]
+[assembly: AssemblyVersion("1.3.1.0")]
+[assembly: AssemblyFileVersion("1.3.1.0")]
+[assembly: AssemblyInformationalVersion("1.3.1")]
 
 // Sidetone Control: the UI. Runs on the .NET Framework that ships with Windows and drives
 // SidetoneHelper (embedded in this exe), which runs on NGENUITY's .NET runtime and talks to
@@ -293,10 +293,9 @@ class HelperProcess : IDisposable
         Dispose();
         var dotnet = FindDotnet();
         if (dotnet == null) throw new FileNotFoundException(".NET runtime not found. Install or update HyperX NGENUITY.");
-        // The MSIX package ships the helper in its read-only install folder. The plain exe always uses its own
-        // embedded copy, so a SidetoneHelper.exe planted next to it (e.g. in Downloads) is never run.
-        var bundled = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "SidetoneHelper.exe");
-        var helperExe = Packaging.IsPackaged && File.Exists(bundled) ? bundled : ExtractHelper();
+        // Always run the embedded copy from our data folder. dotnet.exe cannot read files inside the MSIX install
+        // folder (WindowsApps: "Access is denied"), and a SidetoneHelper.exe planted next to the exe is never run.
+        var helperExe = ExtractHelper();
         var helperDir = Path.GetDirectoryName(helperExe);
         var psi = new ProcessStartInfo(dotnet, "exec --runtimeconfig \"" + Path.Combine(helperDir, "SidetoneHelper.runtimeconfig.json") + "\" \"" + helperExe + "\" \"" + NgenuityDir + "\"")
         {

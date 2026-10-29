@@ -1,11 +1,11 @@
-# Publishing: Sidetone Control for HyperX 1.3.0
+# Publishing: Sidetone Control for HyperX 1.3.1
 
 The release folder holds:
 
 | File | Use |
 |---|---|
-| `SidetoneControlForHyperX-1.3.0.zip` | Direct download (GitHub release, website). Contains `SidetoneControl.exe` and `README.txt`. |
-| `SidetoneControlForHyperX-1.3.0.0-x64.msix` | Microsoft Store upload. Built with your Partner Center identity. |
+| `SidetoneControlForHyperX-1.3.1.zip` | Direct download (GitHub release, website). Contains `SidetoneControl.exe` and `README.txt`. |
+| `SidetoneControlForHyperX-1.3.1.0-x64.msix` | Microsoft Store upload. Built with your Partner Center identity. |
 | `store-screenshot-1920x1080.png` | Store listing screenshot. |
 | `PRIVACY.md` | Privacy policy text. Host it somewhere public, such as a GitHub repo, and paste the URL into Partner Center. |
 | `SHA256SUMS.txt` | Checksums, so downloaders can verify the files. |

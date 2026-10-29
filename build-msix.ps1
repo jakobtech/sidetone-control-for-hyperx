@@ -3,7 +3,7 @@
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
 . .\scripts\Icon.ps1
-$version = '1.3.0.0'
+$version = '1.3.1.0'
 
 & powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 if ($LASTEXITCODE) { throw 'build.ps1 failed' }
